@@ -3,31 +3,41 @@
  * @module Users
  */
 
-import { getClient, query, queryParams } from '../core/db'
-import md5 from 'md5'
+const DB = require('../../core/db/db')
+const log = require('loglevel')
+const md5 = require('md5')
 
-export default class Users {
+module.exports = class Users {
     /**
      * Capture all users.
      * 
      * @method
      * @param {function} request - Mapped request for controller.
      * @param {function} response - Function to return response callback.
+     * @return 
      */
-    getAllUsers(request) {
-        const result = {}
-        getClient((errClient, client) => {
-            if (errClient) return result.error = { code: 503, err: errClient }
-
-            query('SELECT * FROM users;', (err, res) => {
-                client.end()
-                if (err) return result.error = { code: 500, err: err }
-                else {
-                    if (res.rows.length > 0) res = res.rows
-                    return result.error = { code: 200, data: res }
+    static async getAllUsers() {
+        let promise = new Promise((resolve, reject) => {
+            const result = {}
+            DB.getClient((errClient, client) => {
+                if (errClient) {
+                    result.error = { code: 503, err: errClient }
+                    console.log({ result })
+                    return resolve(result)
+                } else {
+                    DB.query('SELECT * FROM users;', (err, res) => {
+                        client.end()
+                        if (err) result.error = { code: 500, err: err }
+                        else {
+                            if (res.rows.length > 0) res = res.rows
+                            result.error = { code: 200, data: res }
+                        }
+                    }, client)
                 }
-            }, client)
+            })
         })
+
+        return await promise
     }
 
     /**
@@ -37,15 +47,15 @@ export default class Users {
      * @param {function} request - Mapped request for controller.
      * @param {function} response - Function to return response callback.
      */
-    getUserById(request, response) {
+    static getUserById(request, response) {
         const userId = parseInt(request.params.id)
 
-        getClient((errClient, client) => {
+        DB.getClient((errClient, client) => {
             if (errClient) {
                 response.send(503, errClient)
             }
 
-            queryParams("SELECT * FROM users WHERE code_user = $1", [userId], (err, res) => {
+            DB.queryParams("SELECT * FROM users WHERE code_user = $1", [userId], (err, res) => {
                 client.end();
                 if (err) response.send(500, err)
                 else {
@@ -64,17 +74,17 @@ export default class Users {
      * @param {function} request - Mapped request for controller
      * @param {function} response - Function to return response callback
      */
-    userLogin(request, response) {
+    static userLogin(request, response) {
         if (request.body) {
             const user = {
                 email: request.body.email,
                 password: md5(request.body.password)
             }
 
-            getClient((errClient, client) => {
+            DB.getClient((errClient, client) => {
                 if (errClient) response.send(503, errClient)
 
-                queryParams('SELECT * FROM users WHERE email = $1 AND password = $2', [user.email, user.password], (err, res) => {
+                DB.queryParams('SELECT * FROM users WHERE email = $1 AND password = $2', [user.email, user.password], (err, res) => {
                     client.ed()
                     if (err) response.send(500, err)
                     else {
@@ -95,7 +105,7 @@ export default class Users {
      * @param {function} request - Mapped request for controller.
      * @param {function} response - Function to return response callback.
      */
-    newUser(request, response) {
+    static newUser(request, response) {
         if (request.body) {
             const user = {
                 name: request.body.name,
@@ -103,10 +113,10 @@ export default class Users {
                 password: md5(request.body.password)
             }
 
-            getClient((errClient, client) => {
+            DB.getClient((errClient, client) => {
                 if (errClient) response.send(503, errClient)
 
-                queryParams("INSERT INTO users (email, name, password) VALUES ($1, $2, $3);", [user.email, user.name, user.password], (err) => {
+                DB.queryParams("INSERT INTO users (email, name, password) VALUES ($1, $2, $3);", [user.email, user.name, user.password], (err) => {
                     client.end()
                     const created = err ? true : false
                     response.send(created ? 201 : 200, { success: created })
@@ -125,7 +135,7 @@ export default class Users {
      * @param {function} request - Mapped request for controller.
      * @param {function} response - Function to return response callback.
      */
-    editUser(request, response) {
+    static editUser(request, response) {
         if (request.body) {
             const user = {
                 name: request.body.name,
@@ -133,10 +143,10 @@ export default class Users {
                 password: md5(request.body.password)
             }
 
-            getClient((errClient, client) => {
+            DB.getClient((errClient, client) => {
                 if (errClient) response.send(503, errClient)
 
-                queryParams('UPDATE users SET (name, password) = ($1, $2) WHERE email = $3 RETURNING *;', [user.name, user.password, user.email], (err, res) => {
+                DB.queryParams('UPDATE users SET (name, password) = ($1, $2) WHERE email = $3 RETURNING *;', [user.name, user.password, user.email], (err, res) => {
                     client.end()
 
                     const updated = err || res.rows.length <= 0
@@ -157,17 +167,17 @@ export default class Users {
      * @param {function} request - Mapped request for controller.
      * @param {function} response - Function to return response callback.
      */
-    deleteUser(request, response) {
+    static deleteUser(request, response) {
         if (request.body) {
             const user = {
                 email: request.body.email,
                 password: md5(request.body.password)
             }
 
-            getClient((errClient, client) => {
+            DB.getClient((errClient, client) => {
                 if (errClient) response.send(503, errClient)
 
-                queryParams('UPDATE users SET status = false WHERE email = $1 AND password = $2;', [user.email, user.password], (err) => {
+                DB.queryParams('UPDATE users SET status = false WHERE email = $1 AND password = $2;', [user.email, user.password], (err) => {
                     client.end()
                     let created = err ? true : false
 

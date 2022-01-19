@@ -1,11 +1,11 @@
 const restify = require('restify')
-const usersRoute = require('./routes/users')
+const usersRouter = require('./router/users')
 
 const server = restify.createServer()
 
 server.use(restify.plugins.queryParser())
 server.use(restify.plugins.bodyParser())
 
-usersRoute(server)
+usersRouter(server)
 
 module.exports = server

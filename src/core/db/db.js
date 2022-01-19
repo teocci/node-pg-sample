@@ -2,10 +2,9 @@
  * Module responsible for communication directly with database.
  * @module DB 
  */
-const parse = require("pg-connection-string").parse
 
-const { Client } = require("pg")
-const { configDB } = require("../../app/config/config")
+const { Client } = require('pg')
+const { configDB } = require('../../app/config/config')
 
 module.exports = class DB {
     /**
@@ -15,9 +14,9 @@ module.exports = class DB {
       * @param {function} callback - Function that will be called after processing the query
       * @param {pg.Client} client - Database client already connected
     */
-    query(text, callback, client) {
+    static async query(text, callback, client) {
         // const start = Date.now()
-        return client.query(text, (err, res) => {
+        return await client.query(text, (err, res) => {
             // const duration = Date.now() - start
 
             // log.debug({text: text, duration: duration}, "Executed Simple Query")
@@ -32,10 +31,10 @@ module.exports = class DB {
      * @param {function} callback - Function that will be called after processing the query
      * @param {pg.Client} client - Database client already connected
      */
-    queryParams(text, params, callback, client) {
+    static async queryParams(text, params, callback, client) {
         // const start = Date.now()
 
-        return client.query(text, params, (err, res) => {
+        return await client.query(text, params, (err, res) => {
             // const duration = Date.now() - start
 
             // log.info({text: text, params: params, duration: duration}, "Executed Query:")
@@ -48,7 +47,7 @@ module.exports = class DB {
      * @function
      * @param {function} callback - Function that will be called after connecting to database client
      */
-    getClient(callback) {
+    static async getClient(callback) {
         // const start = Date.now()
 
         const client = new Client(configDB)

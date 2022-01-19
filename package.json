@@ -2,9 +2,11 @@
   "name": "js",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "private": true,
+  "main": "./src/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node ./src/index.js",
+    "start-dev": "nodemon ./src/index.js"
   },
   "keywords": [],
   "author": "Teocci",
@@ -13,8 +15,15 @@
     "copy-webpack-plugin": "^10.1.0",
     "css-loader": "^6.5.1",
     "html-webpack-plugin": "^5.5.0",
+    "loglevel": "^1.8.0",
     "webpack": "^5.65.0",
     "webpack-cli": "^4.9.1",
     "webpack-dev-server": "^4.6.0"
+  },
+  "dependencies": {
+    "-": "^0.0.1",
+    "md5": "^2.3.0",
+    "pg": "^8.7.1",
+    "restify": "^8.6.0"
   }
 }

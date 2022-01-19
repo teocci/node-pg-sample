@@ -3,29 +3,20 @@
  * @module Users
  */
 
-import { getClient, query, queryParams } from '../core/db'
-import md5 from 'md5'
-
-export default class Users {
+const UserModel = require('../model/users')
+const md5 = require('md5')
+class Users {
     /**
      * Capture all users.
      * @function
      * @param {function} request - Mapped request for controller.
      * @param {function} response - Function to return response callback.
      */
-    getAllUsers(request, response) {
-        getClient((errClient, client) => {
-            if (errClient) response.send(503, errClient)
-
-            query('SELECT * FROM users;', (err, res) => {
-                client.end()
-                if (err) response.send(500, err)
-                else {
-                    if (res.rows.length > 0) res = res.rows
-                    response.send(200, res)
-                }
-            }, client)
-        })
+    static async getAllUsers(request, response) {
+        const result = await UserModel.getAllUsers()
+        console.log({ result })
+        response.send(200, result)
+        // response.send(result.code, result.err ?? result.data)
     }
 
     /**
@@ -34,7 +25,7 @@ export default class Users {
      * @param {function} request - Mapped request for controller.
      * @param {function} response - Function to return response callback.
      */
-    getUserById(request, response) {
+    static getUserById(request, response) {
         const userId = parseInt(request.params.id)
 
         getClient((errClient, client) => {
@@ -60,7 +51,7 @@ export default class Users {
      * @param {function} request - Mapped request for controller
      * @param {function} response - Function to return response callback
      */
-    userLogin(request, response) {
+    static userLogin(request, response) {
         if (request.body) {
             const user = {
                 email: request.body.email,
@@ -90,7 +81,7 @@ export default class Users {
      * @param {function} request - Mapped request for controller.
      * @param {function} response - Function to return response callback.
      */
-    newUser(request, response) {
+    static newUser(request, response) {
         if (request.body) {
             const user = {
                 name: request.body.name,
@@ -119,7 +110,7 @@ export default class Users {
      * @param {function} request - Mapped request for controller.
      * @param {function} response - Function to return response callback.
      */
-    editUser(request, response) {
+    static editUser(request, response) {
         if (request.body) {
             const user = {
                 name: request.body.name,
@@ -150,7 +141,7 @@ export default class Users {
      * @param {function} request - Mapped request for controller.
      * @param {function} response - Function to return response callback.
      */
-    deleteUser(request, response) {
+    static deleteUser(request, response) {
         if (request.body) {
             const user = {
                 email: request.body.email,
@@ -172,3 +163,6 @@ export default class Users {
         }
     }
 }
+
+
+module.exports = Users
