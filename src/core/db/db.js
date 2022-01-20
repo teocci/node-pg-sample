@@ -14,9 +14,9 @@ module.exports = class DB {
       * @param {function} callback - Function that will be called after processing the query
       * @param {pg.Client} client - Database client already connected
     */
-    static async query(text, callback, client) {
+    static query(text, callback, client) {
         // const start = Date.now()
-        return await client.query(text, (err, res) => {
+        return client.query(text, (err, res) => {
             // const duration = Date.now() - start
 
             // log.debug({text: text, duration: duration}, "Executed Simple Query")
@@ -31,15 +31,15 @@ module.exports = class DB {
      * @param {function} callback - Function that will be called after processing the query
      * @param {pg.Client} client - Database client already connected
      */
-    static async queryParams(text, params, callback, client) {
+    static queryParams(text, params, callback, client) {
         // const start = Date.now()
 
-        return await client.query(text, params, (err, res) => {
+        return client.query(text, params, (err, res) => {
             // const duration = Date.now() - start
 
             // log.info({text: text, params: params, duration: duration}, "Executed Query:")
             callback(err, res)
-        });
+        })
     }
 
     /**
@@ -47,17 +47,19 @@ module.exports = class DB {
      * @function
      * @param {function} callback - Function that will be called after connecting to database client
      */
-    static async getClient(callback) {
+    static async instance(callback) {
         // const start = Date.now()
 
         const client = new Client(configDB)
 
-        client.connect((err, client, done) => {
+        await client.connect((err, client, done) => {
             // const duration = Date.now() - start
 
-            // log.info({duration: duration}, "New Client Connected")
+            console.log('DB connected')
             callback(err, client, done)
         })
+
+        return client
     }
 }
 
